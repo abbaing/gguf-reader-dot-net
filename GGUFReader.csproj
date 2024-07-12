@@ -10,4 +10,8 @@
     <Folder Include="Models\GGUF\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML" Version="3.0.1" />
+  </ItemGroup>
+
 </Project>
