@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="LLamaSharp" Version="0.13.0" />
     <PackageReference Include="Microsoft.ML" Version="3.0.1" />
   </ItemGroup>
 
