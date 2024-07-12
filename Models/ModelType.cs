@@ -6,5 +6,5 @@ public enum ModelType
     MISTRAL_7B,
     MIXTRAL_7B,
     OPENHERMES_7B,
-    CHAT_GPT
+    CHAT_GPT_2
 }
