@@ -34,13 +34,12 @@ public class PathManagerTests
     public void GetModelPath_ReturnsCorrectPath()
     {
         // Arrange
-        string modelPath = "Models";
         string folderPath = "GGUF";
         string modelName = "gpt2";
-        string expectedPath = Path.Combine(PathManager.MainPath, modelPath, folderPath, modelName);
+        string expectedPath = Path.Combine(PathManager.MainPath, folderPath, modelName);
 
         // Act
-        string result = PathManager.GetModelPath(modelPath, folderPath, modelName);
+        string result = PathManager.GetModelPath(folderPath, modelName);
 
         // Assert
         Assert.That(result, Is.EqualTo(expectedPath));

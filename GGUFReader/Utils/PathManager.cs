@@ -11,9 +11,9 @@ public static class PathManager
     public static string MainPath => Path.GetDirectoryName(_getEntryAssemblyLocation())
         ?? throw new Exception(EXCEPTION_MESSAGE);
 
-    public static string GetModelPath(string modelPath, string folderPath, string modelName)
+    public static string GetModelPath(string folderPath, string modelName)
     {
-        return Path.Combine(MainPath, modelPath, folderPath, modelName);
+        return Path.Combine(MainPath, folderPath, modelName);
     }
 
     public static void SetEntryAssemblyLocationFunc(Func<string?> getEntryAssemblyLocation)
