@@ -7,7 +7,7 @@ namespace GGUFReader.Utils;
 
 public static class DIManager
 {
-    public static IServiceCollection AddMiLibreria(this IServiceCollection services)
+    public static IServiceCollection Load(this IServiceCollection services)
     {
         services.AddSingleton<MLContext>();
 
