@@ -8,8 +8,7 @@ namespace GGUFReader.Factories;
 public class LLamaModelExecutorFactory : ILLamaModelExecutorFactory
 {
     public class NullPathException(string? path) : ArgumentException("Path cannot be null or empty", nameof(path)) { }
-    public class NullModelNameException(string? modelName) : ArgumentException("Path cannot be null or empty", nameof(modelName)) { }
-
+    
     public ILLamaExecutor CreateExecutor(LLamaExecutorConfiguration config)
     {
         if (string.IsNullOrWhiteSpace(config.Path))
@@ -17,14 +16,7 @@ public class LLamaModelExecutorFactory : ILLamaModelExecutorFactory
             throw new NullPathException(nameof(config.Path));
         }
 
-        if (string.IsNullOrWhiteSpace(config.ModelName))
-        {
-            throw new NullModelNameException(nameof(config.ModelName));
-        }
-
-        string modelPath = Path.Combine(config.Path, config.ModelName);
-
-        ModelParams modelParams = new(modelPath);
+        ModelParams modelParams = new(config.Path);
         LLamaWeights weights = LLamaWeights.LoadFromFile(modelParams);
         LLamaContext context = weights.CreateContext(modelParams);
 

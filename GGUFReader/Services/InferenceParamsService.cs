@@ -3,7 +3,7 @@ using LLama.Common;
 
 namespace GGUFReader.Services;
 
-public class InferenceParamsService : IInferenceParamsService
+internal class InferenceParamsService : IInferenceParamsService
 {
     public IInferenceParams GetDefaultParams()
     {
