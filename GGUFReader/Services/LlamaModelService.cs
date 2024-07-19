@@ -1,9 +1,11 @@
-﻿using GGUFReader.Utils;
+﻿using GGUFReader.Factories;
+using GGUFReader.Models;
+using GGUFReader.Utils;
 using LLama.Abstractions;
 
 namespace GGUFReader.Services;
 
-public class LlamaModelService(ILLamaExecutor executor, IInferenceParamsService inferenceParamsService) : ILlamaModelService, IDisposable
+public class LlamaModelService(ILLamaModelExecutorFactory executorFactory, LLamaExecutorConfiguration config, IInferenceParamsService inferenceParamsService) : ILlamaModelService, IDisposable
 {
     private bool _disposed;
 
@@ -11,6 +13,8 @@ public class LlamaModelService(ILLamaExecutor executor, IInferenceParamsService 
     {
         if (string.IsNullOrEmpty(prompt))
             throw new ArgumentException("Prompt cannot be null or empty.", nameof(prompt));
+
+        ILLamaExecutor executor = executorFactory.CreateExecutor(config);
 
         var response = executor.InferAsync(prompt, inferenceParams ?? inferenceParamsService.GetDefaultParams());
         return await StringManager.AsyncAppend(response);

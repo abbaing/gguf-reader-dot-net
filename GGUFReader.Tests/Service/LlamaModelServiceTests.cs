@@ -1,4 +1,6 @@
-﻿using GGUFReader.Services;
+﻿using GGUFReader.Factories;
+using GGUFReader.Models;
+using GGUFReader.Services;
 using LLama.Abstractions;
 using Moq;
 
@@ -14,16 +16,20 @@ public class LlamaModelServiceTests
         var prompt = "test prompt";
         var expectedResponse = "response";
 
-        var inferenceParams = new Mock<IInferenceParams>();
+        var executorConfig = new Mock<LLamaExecutorConfiguration>();
+        var executorFactory = new Mock<ILLamaModelExecutorFactory>();
         var executor = new Mock<ILLamaExecutor>();
         var inferenceParamsService = new Mock<IInferenceParamsService>();
+        var inferenceParams = new Mock<IInferenceParams>();
+
         var responseList = new List<string> { expectedResponse };
         var asyncEnumerable = GetAsyncEnumerable(responseList);
 
-        inferenceParamsService.Setup(s => s.GetDefaultParams()).Returns(inferenceParams.Object);
+        executorFactory.Setup(s => s.CreateExecutor(executorConfig.Object)).Returns(executor.Object);
         executor.Setup(e => e.InferAsync(prompt, inferenceParams.Object, default)).Returns(asyncEnumerable);
+        inferenceParamsService.Setup(s => s.GetDefaultParams()).Returns(inferenceParams.Object);
 
-        var service = new LlamaModelService(executor.Object, inferenceParamsService.Object);
+        var service = new LlamaModelService(executorFactory.Object, executorConfig.Object, inferenceParamsService.Object);
 
         // Act
         var response = await service.GenerateResponseAsync(prompt);
@@ -37,9 +43,14 @@ public class LlamaModelServiceTests
     public void GenerateResponseAsync_NullOrEmptyPrompt_ThrowsArgumentException()
     {
         // Arrange
+        var executorConfig = new Mock<LLamaExecutorConfiguration>();
+        var executorFactory = new Mock<ILLamaModelExecutorFactory>();
         var executor = new Mock<ILLamaExecutor>();
         var inferenceParamsService = new Mock<IInferenceParamsService>();
-        var service = new LlamaModelService(executor.Object, inferenceParamsService.Object);
+
+        executorFactory.Setup(s => s.CreateExecutor(executorConfig.Object)).Returns(executor.Object);
+
+        var service = new LlamaModelService(executorFactory.Object, executorConfig.Object, inferenceParamsService.Object);
 
         // Act & Assert
         Assert.ThrowsAsync<ArgumentException>(() => service.GenerateResponseAsync(null));

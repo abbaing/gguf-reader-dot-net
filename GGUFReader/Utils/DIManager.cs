@@ -1,5 +1,5 @@
-﻿using GGUFReader.Services;
-using LLama.Abstractions;
+﻿using GGUFReader.Factories;
+using GGUFReader.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.ML;
 
@@ -10,6 +10,8 @@ public static class DIManager
     public static IServiceCollection AddMiLibreria(this IServiceCollection services)
     {
         services.AddSingleton<MLContext>();
+
+        services.AddSingleton<ILLamaModelExecutorFactory, LLamaModelExecutorFactory>();
 
         services.AddScoped<IInferenceParamsService, InferenceParamsService>();
         services.AddScoped<ILlamaModelService, LlamaModelService>();
