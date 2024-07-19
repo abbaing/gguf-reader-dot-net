@@ -13,8 +13,7 @@ public static class DIManager
 
         services.AddSingleton<ILLamaModelExecutorFactory, LLamaModelExecutorFactory>();
 
-        services.AddScoped<IInferenceParamsService, InferenceParamsService>();
-        services.AddScoped<ILlamaModelService, LlamaModelService>();
+        services.AddSingleton<IInferenceParamsService, InferenceParamsService>();
 
         return services;
     }
