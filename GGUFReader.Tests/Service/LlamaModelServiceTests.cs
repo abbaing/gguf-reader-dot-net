@@ -1,7 +1,6 @@
 ﻿using GGUFReader.Factories;
 using GGUFReader.Models;
 using GGUFReader.Services;
-using LLama.Abstractions;
 using Moq;
 
 namespace GGUFReader.Tests.Services.LlamaService;
@@ -18,9 +17,9 @@ public class LlamaModelServiceTests
 
         var executorConfig = new Mock<LLamaExecutorConfiguration>();
         var executorFactory = new Mock<ILLamaModelExecutorFactory>();
-        var executor = new Mock<ILLamaExecutor>();
+        var executor = new Mock<ILLamaModelExecutor>();
         var inferenceParamsService = new Mock<IInferenceParamsService>();
-        var inferenceParams = new Mock<IInferenceParams>();
+        var inferenceParams = new Mock<ILlamaInferenceParams>();
 
         var responseList = new List<string> { expectedResponse };
         var asyncEnumerable = GetAsyncEnumerable(responseList);
@@ -45,7 +44,7 @@ public class LlamaModelServiceTests
         // Arrange
         var executorConfig = new Mock<LLamaExecutorConfiguration>();
         var executorFactory = new Mock<ILLamaModelExecutorFactory>();
-        var executor = new Mock<ILLamaExecutor>();
+        var executor = new Mock<ILLamaModelExecutor>();
         var inferenceParamsService = new Mock<IInferenceParamsService>();
 
         executorFactory.Setup(s => s.CreateExecutor(executorConfig.Object)).Returns(executor.Object);
@@ -57,7 +56,7 @@ public class LlamaModelServiceTests
         Assert.ThrowsAsync<ArgumentException>(() => service.GenerateResponseAsync(""));
 
         // Verify
-        executor.Verify(e => e.InferAsync(It.IsAny<string>(), It.IsAny<IInferenceParams>(), It.IsAny<CancellationToken>()), Times.Never);
+        executor.Verify(e => e.InferAsync(It.IsAny<string>(), It.IsAny<ILlamaInferenceParams>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     private static async IAsyncEnumerable<string> GetAsyncEnumerable(List<string> list)

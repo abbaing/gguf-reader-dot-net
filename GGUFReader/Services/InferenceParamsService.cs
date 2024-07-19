@@ -1,13 +1,13 @@
-﻿using LLama.Abstractions;
+﻿using GGUFReader.Models;
 using LLama.Common;
 
 namespace GGUFReader.Services;
 
-internal class InferenceParamsService : IInferenceParamsService
+public class InferenceParamsService : IInferenceParamsService
 {
-    public IInferenceParams GetDefaultParams()
+    public ILlamaInferenceParams GetDefaultParams()
     {
-        return new InferenceParams()
+        return new LlamaInferenceParams()
         {
             Temperature = 0.7f,
             MaxTokens = 100,

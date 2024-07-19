@@ -9,12 +9,12 @@ public class LlamaModelService(ILLamaModelExecutorFactory executorFactory, LLama
 {
     private bool _disposed;
 
-    public async Task<string> GenerateResponseAsync(string? prompt, IInferenceParams? inferenceParams = null)
+    public async Task<string> GenerateResponseAsync(string? prompt, ILlamaInferenceParams? inferenceParams = null)
     {
         if (string.IsNullOrEmpty(prompt))
             throw new ArgumentException("Prompt cannot be null or empty.", nameof(prompt));
 
-        ILLamaExecutor executor = executorFactory.CreateExecutor(config);
+        ILLamaModelExecutor executor = executorFactory.CreateExecutor(config);
 
         var response = executor.InferAsync(prompt, inferenceParams ?? inferenceParamsService.GetDefaultParams());
         return await StringManager.AsyncAppend(response);

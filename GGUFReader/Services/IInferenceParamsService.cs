@@ -1,8 +1,8 @@
-﻿using LLama.Abstractions;
+﻿using GGUFReader.Models;
 
 namespace GGUFReader.Services;
 
 public interface IInferenceParamsService
 {
-    IInferenceParams GetDefaultParams();
+    ILlamaInferenceParams GetDefaultParams();
 }
