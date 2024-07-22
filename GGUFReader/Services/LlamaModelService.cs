@@ -1,15 +1,27 @@
 ﻿using GGUFReader.Factories;
 using GGUFReader.Models;
 using GGUFReader.Utils;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GGUFReader.Services;
 
-public class LlamaModelService(ILLamaModelExecutorFactory executorFactory, LLamaExecutorConfiguration config, IInferenceParamsService inferenceParamsService) : ILlamaModelService, IDisposable
+public class LlamaModelService(string folderPath, string modelName, IServiceProvider serviceProvider) : ILlamaModelService, IDisposable
 {
     private bool _disposed;
 
     public async Task<string> GenerateResponseAsync(string? prompt, ILlamaInferenceParams? inferenceParams = null)
     {
+        string modelPath = PathManager.GetModelPath(folderPath, modelName);
+
+        LLamaExecutorConfiguration config = new()
+        {
+            Path = modelPath,
+            ModelName = modelName
+        };
+
+        IInferenceParamsService inferenceParamsService = serviceProvider.GetRequiredService<IInferenceParamsService>();
+        ILLamaModelExecutorFactory executorFactory = serviceProvider.GetRequiredService<ILLamaModelExecutorFactory>();
+
         if (string.IsNullOrEmpty(prompt))
             throw new ArgumentException("Prompt cannot be null or empty.", nameof(prompt));
 

@@ -8,55 +8,96 @@ namespace GGUFReader.Tests.Services.LlamaService;
 [TestFixture]
 public class LlamaModelServiceTests
 {
-    [Test]
-    public async Task GenerateResponseAsync_ValidPrompt_CallsExecutorWithInferenceParams()
+    private Mock<IServiceProvider> _serviceProviderMock;
+    private Mock<IInferenceParamsService> _inferenceParamsServiceMock;
+    private Mock<ILLamaModelExecutorFactory> _executorFactoryMock;
+    private Mock<ILLamaModelExecutor> _executorMock;
+    private LlamaModelService _llamaModelService;
+
+    [SetUp]
+    public void SetUp()
     {
-        // Arrange
-        var prompt = "test prompt";
-        var expectedResponse = "response";
+        _serviceProviderMock = new Mock<IServiceProvider>();
+        _inferenceParamsServiceMock = new Mock<IInferenceParamsService>();
+        _executorFactoryMock = new Mock<ILLamaModelExecutorFactory>();
+        _executorMock = new Mock<ILLamaModelExecutor>();
 
-        var executorConfig = new Mock<LLamaExecutorConfiguration>();
-        var executorFactory = new Mock<ILLamaModelExecutorFactory>();
-        var executor = new Mock<ILLamaModelExecutor>();
-        var inferenceParamsService = new Mock<IInferenceParamsService>();
-        var inferenceParams = new Mock<ILlamaInferenceParams>();
+        _serviceProviderMock.Setup(sp => sp.GetService(typeof(IInferenceParamsService))).Returns(_inferenceParamsServiceMock.Object);
+        _serviceProviderMock.Setup(sp => sp.GetService(typeof(ILLamaModelExecutorFactory))).Returns(_executorFactoryMock.Object);
 
-        var responseList = new List<string> { expectedResponse };
-        var asyncEnumerable = GetAsyncEnumerable(responseList);
+        _executorFactoryMock.Setup(factory => factory.CreateExecutor(It.IsAny<LLamaExecutorConfiguration>())).Returns(_executorMock.Object);
 
-        executorFactory.Setup(s => s.CreateExecutor(executorConfig.Object)).Returns(executor.Object);
-        executor.Setup(e => e.InferAsync(prompt, inferenceParams.Object, default)).Returns(asyncEnumerable);
-        inferenceParamsService.Setup(s => s.GetDefaultParams()).Returns(inferenceParams.Object);
+        _llamaModelService = new LlamaModelService("testFolderPath", "testModelName", _serviceProviderMock.Object);
+    }
 
-        var service = new LlamaModelService(executorFactory.Object, executorConfig.Object, inferenceParamsService.Object);
-
-        // Act
-        var response = await service.GenerateResponseAsync(prompt);
-
-        // Assert
-        Assert.That(response, Is.EqualTo(expectedResponse));
-        executor.Verify(e => e.InferAsync(prompt, inferenceParams.Object, It.IsAny<CancellationToken>()), Times.Once);
+    [TearDown]
+    public void Dispose()
+    {
+        _llamaModelService.Dispose();
     }
 
     [Test]
-    public void GenerateResponseAsync_NullOrEmptyPrompt_ThrowsArgumentException()
+    public void Constructor_ShouldInitializeFields()
+    {
+        // Act & Assert
+        Assert.That(_llamaModelService, Is.Not.Null);
+    }
+
+    [Test]
+    public void GenerateResponseAsync_WithNullPrompt_ShouldThrowArgumentException()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+            await _llamaModelService.GenerateResponseAsync(null));
+    }
+
+    [Test]
+    public void GenerateResponseAsync_WithEmptyPrompt_ShouldThrowArgumentException()
+    {
+        // Act & Assert
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+            await _llamaModelService.GenerateResponseAsync(string.Empty));
+    }
+
+    [Test]
+    public async Task GenerateResponseAsync_WithValidPrompt_ShouldCallExecutorInferAsync()
     {
         // Arrange
-        var executorConfig = new Mock<LLamaExecutorConfiguration>();
-        var executorFactory = new Mock<ILLamaModelExecutorFactory>();
-        var executor = new Mock<ILLamaModelExecutor>();
-        var inferenceParamsService = new Mock<IInferenceParamsService>();
+        string testPrompt = "test prompt";
+        string expectedResponse = "test response";
+        var responseList = new List<string> { expectedResponse };
+        var asyncEnumerable = GetAsyncEnumerable(responseList);
+        var inferenceParams = new Mock<ILlamaInferenceParams>();
 
-        executorFactory.Setup(s => s.CreateExecutor(executorConfig.Object)).Returns(executor.Object);
+        _executorMock.Setup(e => e.InferAsync(testPrompt, inferenceParams.Object, default)).Returns(asyncEnumerable);
 
-        var service = new LlamaModelService(executorFactory.Object, executorConfig.Object, inferenceParamsService.Object);
+        // Act
+        var result = await _llamaModelService.GenerateResponseAsync(testPrompt, inferenceParams.Object);
 
-        // Act & Assert
-        Assert.ThrowsAsync<ArgumentException>(() => service.GenerateResponseAsync(null));
-        Assert.ThrowsAsync<ArgumentException>(() => service.GenerateResponseAsync(""));
+        // Assert
+        Assert.That(result, Is.EqualTo(expectedResponse));
+        _executorMock.Verify(e => e.InferAsync(testPrompt, inferenceParams.Object, It.IsAny<CancellationToken>()), Times.Once);
+    }
 
-        // Verify
-        executor.Verify(e => e.InferAsync(It.IsAny<string>(), It.IsAny<ILlamaInferenceParams>(), It.IsAny<CancellationToken>()), Times.Never);
+    [Test]
+    public async Task GenerateResponseAsync_WithNullInferenceParams_ShouldUseDefaultParams()
+    {
+        // Arrange
+        string testPrompt = "test prompt";
+        string expectedResponse = "test response";
+        var responseList = new List<string> { expectedResponse };
+        var asyncEnumerable = GetAsyncEnumerable(responseList);
+        var defaultParams = new Mock<ILlamaInferenceParams>();
+
+        _inferenceParamsServiceMock.Setup(service => service.GetDefaultParams()).Returns(defaultParams.Object);
+        _executorMock.Setup(e => e.InferAsync(testPrompt, defaultParams.Object, default)).Returns(asyncEnumerable);
+
+        // Act
+        var result = await _llamaModelService.GenerateResponseAsync(testPrompt);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(expectedResponse));
+        _executorMock.Verify(e => e.InferAsync(testPrompt, defaultParams.Object, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private static async IAsyncEnumerable<string> GetAsyncEnumerable(List<string> list)
