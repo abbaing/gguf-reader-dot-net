@@ -12,6 +12,7 @@ public static class DIManager
         services.AddSingleton<MLContext>();
 
         services.AddSingleton<ILLamaModelExecutorFactory, LLamaModelExecutorFactory>();
+        services.AddSingleton<ILlamaModelServiceFactory, LlamaModelServiceFactory>();
 
         services.AddSingleton<IInferenceParamsService, InferenceParamsService>();
 
